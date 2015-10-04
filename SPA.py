@@ -33,11 +33,27 @@ class KArray:
         process of filtering later on. Filtering will be needed to remove kmers which are already extended.
         :return:
         '''
-        return None
-
+        for i in range(0, len(self.karray)-1, 1):
+            current_item = self.karray[i]
+            next_item = self.karray[i+1]
+            currentk = current_item[0]
+            nextk = next_item[0]
+            if currentk == nextk:
+                try:
+                    self.matches[currentk][0] += 1
+                    self.matches[currentk][1].append(next_item)
+                except KeyError:
+                    self.matches[currentk] = [2, []]
+                    self.matches[currentk][1].append(next_item)
+                    self.matches[currentk][1].append(current_item)
+        self.matches = sorted(self.matches.values(), reverse=True)
 
 if __name__ == '__main__':
     ar = KArray(['I hardly ever find lice but she has tons of nits & they just wont come',
-                 "loosen them. my heart breaks for her when weekend after weekend she has to go"], 5)
+                 "loosen them. my heart breaks for her when weekend after weekend she has to go ever",
+                 ' ever'], 5)
     for item in ar.karray:
         print item
+
+    ar.match()
+    print ar.matches
