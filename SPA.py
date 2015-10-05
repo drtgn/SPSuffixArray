@@ -120,6 +120,12 @@ class KArray:
                 del self.matches[del_idx]
             self.node_caster()
 
+    def build_graph(self):
+        '''
+        No idea !!!
+        :return:
+        '''
+        return 0
 
 if __name__ == '__main__':
     ar = KArray(['TTCCTCAAAAACTTTTTGTTACGACCAGCATCATCTTCAGTTTCTACACTCTTCTAATTCGACCTTTCGT'
