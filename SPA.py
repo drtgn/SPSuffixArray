@@ -27,6 +27,7 @@ class KArray:
             kmer = self.sequence[i:i + self.mmem]
             self.karray.append((kmer, i))
         self.karray = sorted(self.karray)
+        print self.karray
 
     def node_caster(self, value=1):
         '''
@@ -113,23 +114,21 @@ class KArray:
                     self.tempnodes[prenode[0]] += [prenode[1]]
                 except KeyError:
                     self.tempnodes[prenode[0]] = [prenode[1]]
-            self.prenodes += contains
-            self.graph[self.node_id] = {'to': [],
-                                        'contains': contains,
-                                        'length': length, 'mem': before_m+m}
             self.matches = self.matches[1:]
             # From here on in this loop should take care of the filtering.
             # Should be made into a multi process..
-            element = self.graph[self.node_id]['contains'][0]
+            element = contains[0]
             to_del = []
             for num in range(len(self.matches)):
                 for match in self.matches[num]:
-                    if match[1] == element[0] and element[1] <= match[2] <= element[2]:
+                    if element[0] <= match[1] <= element[1]:
                         to_del.append(num)
             for del_idx in sorted(to_del, reverse=True):
                 del self.matches[del_idx]
             self.node_caster()
-        self.prenodes = sorted(self.prenodes)
+        for item in sorted(self.tempnodes.keys()):
+            self.prenodes += ((item, x) for x in sorted(self.tempnodes[item], reverse=True))
+        self.tempnodes = None
 
     def build_graph(self):
         '''
@@ -154,7 +153,5 @@ if __name__ == '__main__':
     ar = KArray(['leblebi yer misin leblebi'], 3)
     ar.match()
     ar.extend_matches()
-    for node in ar.graph:
-        print ar.graph[node]
-    print len(ar.graph)
+    print ar.tempnodes
     print ar.prenodes
