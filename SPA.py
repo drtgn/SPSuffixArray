@@ -9,19 +9,23 @@ class KArray:
         :param kmer_len: kmer length
         :return:
         '''
-        self.seqs = {}
+        self.tempnodes = {}
+        self.sequence = ''
+        self.prenodes = []
         self.karray = []
         self.matches = {}
         self.mmem = kmer_len
         self.graph = {}
         self.node_id = 0
+        self.ranges = {}
         for i in range(len(seq_array)):
-            self.seqs[i] = seq_array[i]
-        for seq_id in self.seqs:
-            seq = self.seqs[seq_id]
-            for i in range(0, len(seq) - self.mmem + 1, 1):
-                kmer = seq[i:i + self.mmem]
-                self.karray.append((kmer, seq_id, i))
+            beg = len(self.sequence)
+            self.sequence += seq_array[i]
+            self.ranges[i] = (beg, len(self.sequence))
+
+        for i in range(0, len(self.sequence) - self.mmem + 1, 1):
+            kmer = self.sequence[i:i + self.mmem]
+            self.karray.append((kmer, i))
         self.karray = sorted(self.karray)
 
     def node_caster(self, value=1):
@@ -73,6 +77,7 @@ class KArray:
         '''
         while len(self.matches) != 1:
             matches = self.matches[0]
+            print matches
             letters = ["*"]
             m = ''
             i = 0
@@ -81,7 +86,7 @@ class KArray:
                 letters = []
                 for match in matches:
                     try:
-                        letters.append(self.seqs[match[1]][match[2] + i])
+                        letters.append(self.sequence[match[1] + i])
                     except IndexError:
                         letters = [1, 2]
                         break
@@ -94,17 +99,23 @@ class KArray:
                 before_m = letters[0] + before_m
                 letters = []
                 for match in matches:
-                    idx = match[2] - i
+                    idx = match[1] - i
                     if idx > -1:
-                        letters.append(self.seqs[match[1]][idx])
+                        letters.append(self.sequence[idx])
                     else:
                         letters = [1, 2]
                         break
                 i += 1
             length = len(m) + len(before_m)
+            contains = [(x[1] - len(before_m), x[1] + len(m) - self.mmem) for x in matches]
+            for prenode in contains:
+                try:
+                    self.tempnodes[prenode[0]] += [prenode[1]]
+                except KeyError:
+                    self.tempnodes[prenode[0]] = [prenode[1]]
+            self.prenodes += contains
             self.graph[self.node_id] = {'to': [],
-                                        'contains': [(x[1], x[2] - len(before_m), x[2] + len(m) - self.mmem) for x
-                                                     in matches],
+                                        'contains': contains,
                                         'length': length, 'mem': before_m+m}
             self.matches = self.matches[1:]
             # From here on in this loop should take care of the filtering.
@@ -118,6 +129,7 @@ class KArray:
             for del_idx in sorted(to_del, reverse=True):
                 del self.matches[del_idx]
             self.node_caster()
+        self.prenodes = sorted(self.prenodes)
 
     def build_graph(self):
         '''
@@ -145,3 +157,4 @@ if __name__ == '__main__':
     for node in ar.graph:
         print ar.graph[node]
     print len(ar.graph)
+    print ar.prenodes
