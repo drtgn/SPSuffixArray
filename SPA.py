@@ -12,6 +12,7 @@ class KArray:
         self.tempnodes = {}
         self.sequence = ''
         self.prenodes = []
+        self.prenode_ids = []
         self.karray = []
         self.matches = {}
         self.mmem = kmer_len
@@ -21,7 +22,7 @@ class KArray:
         for i in range(len(seq_array)):
             beg = len(self.sequence)
             self.sequence += seq_array[i]
-            self.ranges[i] = (beg, len(self.sequence))
+            self.ranges[i] = (beg, len(self.sequence)-1)
 
         for i in range(0, len(self.sequence) - self.mmem + 1, 1):
             kmer = self.sequence[i:i + self.mmem]
@@ -109,6 +110,7 @@ class KArray:
                 i += 1
             length = len(m) + len(before_m)
             contains = [(x[1] - len(before_m), x[1] + len(m) - self.mmem) for x in matches]
+            print contains,1
             for prenode in contains:
                 try:
                     self.tempnodes[prenode[0]] += [prenode[1]]
@@ -135,6 +137,11 @@ class KArray:
         No idea !!!
         :return:
         '''
+        to_del =[]
+        new_nodes = []
+        n = 0
+        #for i in range(len(self.prenodes[n:])):
+
         return 0
 
 if __name__ == '__main__':
@@ -150,8 +157,11 @@ if __name__ == '__main__':
     #              'TTTCGTT'],
     #             5)
 
+    #ar = KArray(['GACCACTGGACCxCTATTAAAACTGCCAC'], 4)
+
     ar = KArray(['leblebi yer misin leblebi'], 3)
     ar.match()
     ar.extend_matches()
     print ar.tempnodes
-    print ar.prenodes
+    print ar.prenodes, ar.ranges
+    ar.build_graph()
